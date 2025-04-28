@@ -4,6 +4,7 @@ using InventoryAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InventoryAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250427224205_AddRoleAndUserModelForIdentityTable")]
+    partial class AddRoleAndUserModelForIdentityTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -261,7 +264,9 @@ namespace InventoryAPI.Migrations
                         .HasColumnType("nvarchar(1)");
 
                     b.Property<DateTime?>("CreationDate")
-                        .HasColumnType("datetime");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValue(new DateTime(2025, 4, 27, 23, 42, 4, 388, DateTimeKind.Local).AddTicks(1538));
 
                     b.Property<bool>("FirstLogIn")
                         .ValueGeneratedOnAdd()
@@ -282,7 +287,9 @@ namespace InventoryAPI.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime?>("PwdExpiryDate")
-                        .HasColumnType("datetime");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValue(new DateTime(2025, 4, 27, 23, 42, 4, 396, DateTimeKind.Local).AddTicks(283));
 
                     b.Property<string>("StaffCode")
                         .HasColumnType("nvarchar(max)");
