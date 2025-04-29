@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using InventoryAPI.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,23 +17,23 @@ namespace ApiSecurity.Controllers;
 public class AuthenticationController : ControllerBase
 {
     private readonly IConfiguration _config;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<User> _userManager;
 
-    public AuthenticationController(IConfiguration config, UserManager<IdentityUser> userManager)
+    public AuthenticationController(IConfiguration config, UserManager<User> userManager)
     {
         _config = config;
         _userManager = userManager;
     }
 
-    public record AuthenticationData(string? UserName, string? Password);
-    public record UserData(int UserId, string UserName, string Title, string EmployeeId);
+    public record AuthenticationData(string? UserName, string? Password, string? Email);
+    public record UserData(string UserId, string UserName);
 
     // api/Authentication/token
     [HttpPost("token")]
     [AllowAnonymous]
-    public ActionResult<string> Authenticate([FromBody] AuthenticationData data)
+    public async Task<ActionResult<string>> Authenticate([FromBody] AuthenticationData data)
     {
-        var user = ValidateCredentials(data);
+        var user =await ValidateCredentials(data)!;
 
         if (user is null)
         {
@@ -55,8 +56,6 @@ public class AuthenticationController : ControllerBase
         List<Claim> claims = new();
         claims.Add(new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()));
         claims.Add(new(JwtRegisteredClaimNames.UniqueName, user.UserName));
-        claims.Add(new("title", user.Title));
-        claims.Add(new("employeeId", user.EmployeeId));
 
         var token = new JwtSecurityToken(
             _config.GetValue<string>("Authentication:Issuer"),
@@ -69,22 +68,20 @@ public class AuthenticationController : ControllerBase
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private UserData? ValidateCredentials(AuthenticationData data)
+    private async Task<UserData>? ValidateCredentials(AuthenticationData data)
     {
-        // THIS IS NOT PRODUCTION CODE - THIS IS ONLY A DEMO - DO NOT USE IN REAL LIFE
-        if (CompareValues(data.UserName, "Miebi") &&
-            CompareValues(data.Password, "Test123"))
-        {
-            return new UserData(1, data.UserName!, "Business Owner", "E001");
-        }
+        var validUser = await _userManager
+            .FindByNameAsync(data.UserName!);
 
-        if (CompareValues(data.UserName, "ADMIN") &&
-            CompareValues(data.Password, "Test123"))
+        if (validUser is null)
+            return null!;
+        
+        if (CompareValues(data.UserName, validUser.UserName!) &&
+            CompareValues(data.Email, validUser.Email!))
         {
-            return new UserData(2, data.UserName!, "Head of Security", "E005");
+            return new UserData(validUser.Id,validUser.UserName!);
         }
-
-        return null;
+        return null!;
     }
 
     private bool CompareValues(string? actual, string expected)
