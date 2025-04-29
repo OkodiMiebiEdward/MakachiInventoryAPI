@@ -26,24 +26,24 @@ public class ApplicationDbContext : IdentityDbContext
               .HasColumnType("datetime");
 
         builder.Entity<User>()
-              .Property(u => u.FirstLogIn)
+               .Property(u => u.FirstLogIn)
+               .HasDefaultValue(false);
+
+        builder.Entity<User>()
+              .Property(u => u.PwdExpiry)
               .HasDefaultValue(false);
 
         builder.Entity<User>()
-             .Property(u => u.PwdExpiry)
+              .Property(u => u.PwdExpiryDate)
+              .HasColumnType("datetime");
+
+        builder.Entity<User>()
+             .Property(u => u.Suspended)
              .HasDefaultValue(false);
 
         builder.Entity<User>()
-            .Property(u => u.PwdExpiryDate)
-            .HasColumnType("datetime");
-
-        builder.Entity<User>()
-           .Property(u => u.Suspended)
-           .HasDefaultValue(false);
-
-        builder.Entity<User>()
-           .Property(u => u.AccessLevel)
-           .HasMaxLength(1);
+             .Property(u => u.AccessLevel)
+             .HasMaxLength(1);
 
         base.OnModelCreating(builder);
     }
