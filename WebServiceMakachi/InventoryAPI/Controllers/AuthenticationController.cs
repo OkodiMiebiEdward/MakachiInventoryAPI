@@ -25,7 +25,7 @@ public class AuthenticationController : ControllerBase
         _userManager = userManager;
     }
 
-    public record AuthenticationData(string? UserName, string? Password, string? Email);
+    public record AuthenticationData(string? UserName, string? Password, string? Email, string Phonenumber);
     public record UserData(string UserId, string UserName);
 
     // api/Authentication/token
