@@ -25,7 +25,7 @@ public class AuthenticationController : ControllerBase
         _userManager = userManager;
     }
 
-    public record AuthenticationData(string? UserName, string? Password, string? Email);
+    public record AuthenticationData(string? UserName, string? Password, string? Email, string Phonenumber);
     public record UserData(string UserId, string UserName);
 
     // api/Authentication/token
@@ -62,7 +62,7 @@ public class AuthenticationController : ControllerBase
             _config.GetValue<string>("Authentication:Audience"),
             claims,
             DateTime.UtcNow, // When this token becomes valid
-            DateTime.UtcNow.AddMinutes(1), // When the token will expire
+            DateTime.UtcNow.AddMinutes(20), // When the token will expire
             signingCredentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
