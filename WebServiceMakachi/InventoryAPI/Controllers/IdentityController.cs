@@ -1,8 +1,10 @@
-﻿using InventoryAPI.Model;
+﻿using InventoryAPI.Context;
+using InventoryAPI.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using static ApiSecurity.Controllers.AuthenticationController;
@@ -15,15 +17,17 @@ namespace InventoryAPI.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<RoleTb> _roleManager;
+        private readonly ApplicationDbContext _dbContext;
 
-        public record AuthenticationRole(string? RoleName, string? RoleDescription);
+        public record AuthenticationRole(string? Name, string? RoleDescription);
         private readonly string serverErrorMessage = "Server error, contact administrator";
 
         public IdentityController(UserManager<User> userManager,
-            RoleManager<RoleTb> roleManager)
+            RoleManager<RoleTb> roleManager, ApplicationDbContext dbContext)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _dbContext = dbContext;
         }
 
         [HttpPost("CreateUser")]
@@ -56,10 +60,10 @@ namespace InventoryAPI.Controllers
                     });
                 }
                 else
-                    return StatusCode(201, new ResponseModel 
+                    return StatusCode(201, new ResponseModel
                     {
-                       Status = "Success",
-                       Description = "User successfully created"
+                        Status = "Success",
+                        Description = "User successfully created"
                     });
             }
             catch (Exception)
@@ -139,13 +143,13 @@ namespace InventoryAPI.Controllers
                 if (authRole is null)
                     return BadRequest("Invalid data");
 
-                if ((string.IsNullOrWhiteSpace(authRole.RoleName)) || (string.IsNullOrWhiteSpace(authRole.RoleDescription)))
+                if ((string.IsNullOrWhiteSpace(authRole.Name)) || (string.IsNullOrWhiteSpace(authRole.RoleDescription)))
                     return BadRequest("Role name and Role description must be provided");
                 else
                 {
                     var role = new RoleTb
                     {
-                        Name = authRole.RoleName,
+                        Name = authRole.Name,
                         RoleDescription = authRole.RoleDescription
                     };
                     var result = await _roleManager.CreateAsync(role);
@@ -161,7 +165,7 @@ namespace InventoryAPI.Controllers
                     {
                         return StatusCode(400, new ResponseModel
                         {
-                            Status = "Error",
+                            Status = "Failed",
                             Description = "Role creation failed"
                         });
                     }
@@ -197,7 +201,7 @@ namespace InventoryAPI.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(500, serverErrorMessage   );
+                return StatusCode(500, serverErrorMessage);
             }
         }
 
@@ -218,7 +222,8 @@ namespace InventoryAPI.Controllers
                 {
                     return new RoleTb
                     {
-                        Name = role.Name
+                        Name = role.Name,
+                        RoleDescription = role.RoleDescription
                     };
                 }
             }
@@ -244,7 +249,6 @@ namespace InventoryAPI.Controllers
                 return StatusCode(500, serverErrorMessage);
             }
         }
-
 
         [HttpGet("GetUser")]
         public async Task<ActionResult<User>> GetUserById([FromQuery] string email)
@@ -296,24 +300,24 @@ namespace InventoryAPI.Controllers
         }
 
         [HttpPost("AssignRolesToUsers")]
-        public async Task<ActionResult<ResponseModel>> AssignRolesToUsers([FromQuery]string userName, [FromQuery] string role)
+        public async Task<ActionResult<ResponseModel>> AssignRolesToUsers([FromBody] AssignRoleVM assignRole)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(userName))
+                if (string.IsNullOrWhiteSpace(assignRole.UserName))
                     return BadRequest("User name should is required");
-                if (string.IsNullOrWhiteSpace(role))
+                if (string.IsNullOrWhiteSpace(assignRole.Role))
                     return BadRequest("Role should be provided");
 
-                var user = await _userManager.FindByNameAsync(userName);
+                var user = await _userManager.FindByNameAsync(assignRole.UserName);
                 if (user is null)
-                    return NotFound($"The user with name {userName} cannot be found");
+                    return NotFound($"The user with name {assignRole.UserName} cannot be found");
                 else
                 {
-                    var roleExist = await _roleManager.RoleExistsAsync(role);
+                    var roleExist = await _roleManager.RoleExistsAsync(assignRole.Role);
                     if (roleExist)
                     {
-                        var isUserInRole = await _userManager.IsInRoleAsync(user, role);
+                        var isUserInRole = await _userManager.IsInRoleAsync(user, assignRole.Role);
                         if (isUserInRole)
                             return new ResponseModel
                             {
@@ -322,7 +326,7 @@ namespace InventoryAPI.Controllers
                             };
                         else
                         {
-                            var result = await _userManager.AddToRoleAsync(user, role);
+                            var result = await _userManager.AddToRoleAsync(user, assignRole.Role);
                             if (!result.Succeeded)
                             {
                                 return new ResponseModel
@@ -333,7 +337,7 @@ namespace InventoryAPI.Controllers
                             }
                             return new ResponseModel
                             {
-                                Status = "success",
+                                Status = "Success",
                                 Description = "Roles successfully added to user"
                             };
                         }
@@ -348,6 +352,80 @@ namespace InventoryAPI.Controllers
             catch (Exception)
             {
                 return StatusCode(500, serverErrorMessage);
+            }
+        }
+
+        [HttpGet("GetUsersAndRoles")]
+        public async Task<ActionResult<List<AssignRoleVM>>> GetUsersAndRoles()
+        {
+            try
+            {
+                var userRoles = await _dbContext.Users
+                .Join(_dbContext.UserRoles, u => u.Id, ur => ur.UserId,
+                (u, ur) => new { u, ur })
+                .Join(_dbContext.Roles, temp => temp.ur.RoleId,
+                r => r.Id, (temp, r) => new AssignRoleVM
+                {
+                    UserName = temp.u.UserName,
+                    Role = r.Name
+                })
+                .ToListAsync();
+
+                if (userRoles.Count > 0)
+                    return userRoles;
+                else
+                    new List<AssignRoleVM>();
+            }
+            catch (Exception)
+            {
+                return new List<AssignRoleVM>();
+            }
+            return new List<AssignRoleVM>();
+        }
+
+        [HttpDelete("Delete")]
+        public async Task<ActionResult> DeleteRole([FromBody] AuthenticationRole? authRole)
+        {
+            try
+            {
+                if (authRole is null)
+                    return BadRequest("Invalid data");
+
+                if ((string.IsNullOrWhiteSpace(authRole.Name)) || (string.IsNullOrWhiteSpace(authRole.RoleDescription)))
+                    return BadRequest("Role name and Role description must be provided");
+                else
+                {
+                    var role = new RoleTb
+                    {
+                        Name = authRole.Name,
+                        RoleDescription = authRole.RoleDescription
+                    };
+                    var result = await _roleManager.DeleteAsync(role);
+                    if (result.Succeeded)
+                    {
+                        return StatusCode(200, new ResponseModel
+                        {
+                            Status = "Deleted",
+                            Description = "Role deleted"
+                        });
+                    }
+                    else
+                    {
+                        return StatusCode(400, new ResponseModel
+                        {
+                            Status = "Failed",
+                            Description = "Role deletion failed"
+                        });
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new ResponseModel
+                {
+                    Status = "ServerError",
+                    Description = serverErrorMessage
+                });
             }
         }
     }
