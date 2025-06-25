@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using static ApiSecurity.Controllers.AuthenticationController;
 
@@ -145,8 +146,14 @@ namespace InventoryAPI.Controllers
 
                 if ((string.IsNullOrWhiteSpace(authRole.Name)) || (string.IsNullOrWhiteSpace(authRole.RoleDescription)))
                     return BadRequest("Role name and Role description must be provided");
-                else
+
+
+                // Try to find the role by name
+                var existingRole = await _roleManager.FindByNameAsync(authRole.Name);
+
+                if (existingRole == null)
                 {
+                    // Role does not exist, create it
                     var role = new RoleTb
                     {
                         Name = authRole.Name,
@@ -167,6 +174,28 @@ namespace InventoryAPI.Controllers
                         {
                             Status = "Failed",
                             Description = "Role creation failed"
+                        });
+                    }
+                }
+                else
+                {
+                    // Role exists, update it
+                    existingRole.RoleDescription = authRole.RoleDescription;
+                    var result = await _roleManager.UpdateAsync(existingRole);
+                    if (result.Succeeded)
+                    {
+                        return StatusCode(200, new ResponseModel
+                        {
+                            Status = "Success",
+                            Description = "Role updated successfully"
+                        });
+                    }
+                    else
+                    {
+                        return StatusCode(400, new ResponseModel
+                        {
+                            Status = "Failed",
+                            Description = "Role update failed"
                         });
                     }
                 }
@@ -355,6 +384,38 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        [HttpGet("GetSingleUserRole")]
+        public async Task<ActionResult<AssignRoleVM>> GetSingleUserAndRole([FromQuery] string user, [FromQuery] string role)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(role))
+                    return BadRequest("User and role must be provided");
+
+                var userRole = await _dbContext.Users
+                    .Where(u => u.UserName == user)
+                    .Join(_dbContext.UserRoles, u => u.Id, ur => ur.UserId,
+                    (u, ur) => new { u, ur })
+                    .Join(_dbContext.Roles.Where(r => r.Name == role),
+                    temp => temp.ur.RoleId, r => r.Id,
+                    (temp, r) => new AssignRoleVM
+                    {
+                        UserName = temp.u.UserName,
+                        Role = r.Name
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (userRole == null)
+                    return NotFound("User with the specified role not found");
+
+                return userRole;
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, serverErrorMessage);
+            }
+        }
+
         [HttpGet("GetUsersAndRoles")]
         public async Task<ActionResult<List<AssignRoleVM>>> GetUsersAndRoles()
         {
@@ -383,24 +444,21 @@ namespace InventoryAPI.Controllers
             return new List<AssignRoleVM>();
         }
 
-        [HttpDelete("Delete")]
-        public async Task<ActionResult> DeleteRole([FromBody] AuthenticationRole? authRole)
+        [HttpDelete("DeleteRole")]
+        public async Task<ActionResult> DeleteRole([FromQuery] string roleName)
         {
             try
             {
-                if (authRole is null)
+                if (roleName is null)
                     return BadRequest("Invalid data");
-
-                if ((string.IsNullOrWhiteSpace(authRole.Name)) || (string.IsNullOrWhiteSpace(authRole.RoleDescription)))
-                    return BadRequest("Role name and Role description must be provided");
                 else
                 {
-                    var role = new RoleTb
-                    {
-                        Name = authRole.Name,
-                        RoleDescription = authRole.RoleDescription
-                    };
-                    var result = await _roleManager.DeleteAsync(role);
+                    var getRole = await _roleManager.FindByNameAsync(roleName);
+
+                    if (getRole == null)
+                        return NotFound("Role is not found");
+
+                    var result = await _roleManager.DeleteAsync(getRole);
                     if (result.Succeeded)
                     {
                         return StatusCode(200, new ResponseModel
@@ -417,6 +475,76 @@ namespace InventoryAPI.Controllers
                             Description = "Role deletion failed"
                         });
                     }
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new ResponseModel
+                {
+                    Status = "ServerError",
+                    Description = serverErrorMessage
+                });
+            }
+        }
+
+        [HttpDelete("RemoveRoleFromUser")]
+        public async Task<ActionResult<ResponseModel>> RemoveRoleFromUser([FromQuery] string userName, [FromQuery] string roleName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(roleName))
+                    return BadRequest(new ResponseModel
+                    {
+                        Status = "Failed",
+                        Description = "Username and role name must be provided"
+                    });
+
+                var roleExist = await _roleManager.RoleExistsAsync(roleName);
+                if (!roleExist)
+                {
+                    return NotFound(new ResponseModel
+                    {
+                        Status = "Failed",
+                        Description = "Role does not exist"
+                    });
+                }
+
+                var user = await _userManager.FindByNameAsync(userName);
+                if (user == null)
+                {
+                    return NotFound(new ResponseModel
+                    {
+                        Status = "Failed",
+                        Description = "User not found"
+                    });
+                }
+
+                var isInRole = await _userManager.IsInRoleAsync(user, roleName);
+                if (!isInRole)
+                {
+                    return BadRequest(new ResponseModel
+                    {
+                        Status = "Failed",
+                        Description = "User is not in the specified role"
+                    });
+                }
+
+                var result = await _userManager.RemoveFromRoleAsync(user, roleName);
+                if (result.Succeeded)
+                {
+                    return Ok(new ResponseModel
+                    {
+                        Status = "Success",
+                        Description = "Role removed from user successfully"
+                    });
+                }
+                else
+                {
+                    return StatusCode(500, new ResponseModel
+                    {
+                        Status = "Failed",
+                        Description = "Failed to remove role from user"
+                    });
                 }
             }
             catch (Exception)
