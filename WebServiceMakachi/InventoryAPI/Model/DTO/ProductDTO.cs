@@ -1,13 +1,12 @@
-﻿namespace InventoryAPI.Model;
+﻿namespace InventoryAPI.Model.DTO;
 
-public class Product
+public class ProductDTO
 {
-    public int Id { get; set; }
+    public int? Id { get; set; }
     public string ProductName { get; set; }
     public string? ProductDescription { get; set; }
     public int CategoryId { get; set; }
-    public Category Category { get; set; }
     public string SKU { get; set; }
     public string BarCodeNumber { get; set; }
-    public List<Variant> Variants { get; set; } = new List<Variant>();
+    public List<VariantDTO> Variants { get; set; } = new List<VariantDTO>();
 }
