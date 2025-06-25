@@ -43,15 +43,18 @@ public class InventoryDbContext : DbContext
             // Set primary key
             entity.HasKey(v => v.Id);
 
-            // Configure Name property
-            entity.Property(v => v.Name)
+            // Configure Size property
+            entity.Property(v => v.Size)
                 .IsRequired()
                 .HasMaxLength(100);
 
-            // Configure Value property
-            entity.Property(v => v.Value)
+            // Configure Color property
+            entity.Property(v => v.Color)
                 .IsRequired()
                 .HasMaxLength(200);
+
+            entity.Property(p => p.Price)
+                .HasColumnType("decimal(18,2)"); // Precision: 18, Scale: 2
 
             // Define relationship with Product table (Many-to-One)
             entity.HasOne(v => v.Product)
@@ -60,7 +63,7 @@ public class InventoryDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade); // If a product is deleted, its variants should be removed too.
 
             // Add an index for faster lookup on Name and Value combinations
-            entity.HasIndex(v => new { v.Name, v.Value });
+            //entity.HasIndex(v => new { v.Name, v.Value });
         });
 
         modelBuilder.Entity<Product>(entity =>
@@ -92,7 +95,7 @@ public class InventoryDbContext : DbContext
             // Define relationship with Category (Many-to-One)
             entity.HasOne(p => p.Category)
                 .WithMany() // Assuming Category does not have a Product list
-                .HasForeignKey("CategoryId") // Explicit Foreign Key
+                .HasForeignKey(p=> p.CategoryId) // Explicit Foreign Key
                 .OnDelete(DeleteBehavior.Restrict); // Prevent unintended deletions
 
             // Define relationship with Variant (One-to-Many)
@@ -100,6 +103,7 @@ public class InventoryDbContext : DbContext
                 .WithOne(v => v.Product)
                 .HasForeignKey(v => v.ProductId)
                 .OnDelete(DeleteBehavior.Cascade); // Deleting a product removes all variants
+
 
             // Add an index for faster lookup on SKU and BarCodeNumber
             entity.HasIndex(p => p.SKU).IsUnique();
