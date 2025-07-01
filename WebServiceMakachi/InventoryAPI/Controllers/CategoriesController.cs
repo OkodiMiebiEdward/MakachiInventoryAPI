@@ -106,21 +106,21 @@ namespace InventoryAPI.Controllers
 
 
         [HttpGet("GetCategory")]
-        public ActionResult<Category> GetCategory([FromQuery]string categoryName)
+        public ActionResult<Category> GetCategory([FromQuery]int id)
         {
             Category category = new();
             try
             {
-                if (string.IsNullOrEmpty(categoryName))
+                if (id == 0)
                     return BadRequest("Enter required parameter");
 
                 var getCategory = _inventoryDbContext.Categories
-                    .FirstOrDefault(x => x.Name == categoryName);
+                    .FirstOrDefault(x => x.Id == id);
 
                 if (getCategory is not null)
                     return Ok(getCategory);
                 else
-                    return NotFound($"Category with name {categoryName} is not found");
+                    return NotFound($"Category with name {id} is not found");
             }
             catch (Exception)
             {
@@ -133,20 +133,20 @@ namespace InventoryAPI.Controllers
         }
 
         [HttpDelete("DeleteCategory")]
-        public async Task<ActionResult> DeleteCategory([FromQuery] string name)
+        public async Task<ActionResult> DeleteCategory([FromQuery] int? id)
         {
-            if (name is null)
+            if (id is null)
                 return BadRequest(new ResponseModel
                 {
                     Status = "Failed",
-                    Description = "Category name is required"
+                    Description = "Category id is required"
                 });
 
             Category category = new();
             try
             {
                 var categoryToDelete = _inventoryDbContext.Categories
-                    .FirstOrDefault(x => x.Name == name);
+                    .FirstOrDefault(x => x.Id == id);
 
                 if (categoryToDelete is null)
                     return NotFound(new ResponseModel
