@@ -61,6 +61,7 @@ namespace InventoryAPI.Controllers
                 #region getProduct
                 var productToCheck = new Product
                 {
+                    Id = product.Id,
                     ProductName = product.ProductName,
                     ProductDescription = product.ProductDescription,
                     CategoryId = product.CategoryId,
@@ -78,11 +79,17 @@ namespace InventoryAPI.Controllers
                 #endregion
 
                 var existingProduct = _inventoryDb.Products
-                    .FirstOrDefault(c => c.ProductName == productToCheck.ProductName);
+                    .FirstOrDefault(c => c.Id == productToCheck.Id);
 
                 if (existingProduct != null)
                 {
+                    existingProduct.Id = productToCheck.Id;
                     existingProduct.ProductDescription = productToCheck.ProductDescription;
+                    existingProduct.SKU = productToCheck.SKU;
+                    existingProduct.BarCodeNumber = productToCheck.BarCodeNumber;
+                    existingProduct.ProductName = productToCheck.ProductName;
+                    existingProduct.CategoryId = productToCheck.CategoryId;
+                    existingProduct.Variants = productToCheck.Variants;
                     _inventoryDb.Products.Update(existingProduct);
 
                     await _inventoryDb.SaveChangesAsync();
@@ -125,6 +132,7 @@ namespace InventoryAPI.Controllers
 
                 var productDTOs = products.Select(p => new ProductDTO
                 {
+                    Id = p.Id,
                     ProductName = p.ProductName,
                     ProductDescription = p.ProductDescription,
                     CategoryId = p.CategoryId,
@@ -151,19 +159,15 @@ namespace InventoryAPI.Controllers
         }
 
         [HttpGet("GetProduct")]
-        public async Task<ActionResult<ProductDTO>> GetProduct([FromQuery] string productName)
+        public async Task<ActionResult<ProductDTO>> GetProduct([FromQuery] int id)
         {
             try
             {
                 ProductDTO productResponse = new();
 
-                if (string.IsNullOrEmpty(productName))
-                    return BadRequest("Enter required parameter");
-
-
                 var getProduct = await _inventoryDb.Products
                     .Include(p => p.Variants)
-                    .FirstOrDefaultAsync(x => x.ProductName == productName.Trim());
+                    .FirstOrDefaultAsync(x => x.Id == id);
 
                 productResponse = new ProductDTO
                 {
@@ -184,7 +188,7 @@ namespace InventoryAPI.Controllers
                 if (productResponse is not null)
                     return Ok(productResponse);
                 else
-                    return NotFound($"Product with name {productName} is not found");
+                    return NotFound($"Product with id {id} is not found");
             }
             catch (Exception)
             {

@@ -19,16 +19,18 @@ namespace InventoryAPI.Controllers
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<RoleTb> _roleManager;
         private readonly ApplicationDbContext _dbContext;
+        private readonly SignInManager<User> _signInManager;
 
         public record AuthenticationRole(string? Name, string? RoleDescription);
         private readonly string serverErrorMessage = "Server error, contact administrator";
 
         public IdentityController(UserManager<User> userManager,
-            RoleManager<RoleTb> roleManager, ApplicationDbContext dbContext)
+            RoleManager<RoleTb> roleManager, ApplicationDbContext dbContext, SignInManager<User> signInManager)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _dbContext = dbContext;
+            _signInManager = signInManager;
         }
 
         [HttpPost("CreateUser")]
@@ -42,8 +44,17 @@ namespace InventoryAPI.Controllers
 
                 var user = await _userManager.CreateAsync(new User
                 {
+                    #region Test Login
                     //ADMIN
                     //Test123456@
+
+                    //John
+                    //Test123456&
+
+                    //Susan
+                    //Test123456%
+                    #endregion
+
                     UserName = data.UserName,
                     Email = data.Email,
                     EmailConfirmed = false,
@@ -85,13 +96,14 @@ namespace InventoryAPI.Controllers
                 if (loginDetail is null)
                     return BadRequest("Invalid data");
 
-                if (loginDetail.Email == "")
-                    return BadRequest("Email is required");
+                //if (loginDetail.Email == "")
+                //    return BadRequest("Email is required");
 
                 if (loginDetail.Password == "")
                     return BadRequest("Password is required");
 
-                var validUser = await _userManager.FindByEmailAsync(loginDetail.Email!);
+                //var validUser = await _userManager.FindByEmailAsync(loginDetail.Email!);
+                var validUser = await _userManager.FindByNameAsync(loginDetail.UserName!);
 
                 if (validUser is null)
                 {
@@ -310,14 +322,14 @@ namespace InventoryAPI.Controllers
                     return BadRequest("Provide valid User");
                 else
                 {
-                    if (string.IsNullOrWhiteSpace(user.Email))
-                        return BadRequest("Email is Required");
+                    //if (string.IsNullOrWhiteSpace(user.Email))
+                    //    return BadRequest("Email is Required");
                     if (string.IsNullOrWhiteSpace(user.Password))
                         return BadRequest("Password is Required");
                     if (string.IsNullOrWhiteSpace(user.UserName))
                         return BadRequest("UserName is Required");
 
-                    var userToDelete = await _userManager.FindByEmailAsync(user.Email);
+                    var userToDelete = await _userManager.FindByNameAsync(user.UserName);
                     await _userManager.DeleteAsync(userToDelete!);
                     return Ok("User deleted successfully");
                 }
@@ -554,6 +566,54 @@ namespace InventoryAPI.Controllers
                     Status = "ServerError",
                     Description = serverErrorMessage
                 });
+            }
+        }
+
+        [HttpGet("GetRoleFromSignedIn")]
+        public async Task<SignedInDetail> GetWhoseSignedIn()
+        {
+            try
+            {
+                // Get the username of the currently signed-in user
+                var userName = User?.Identity?.Name;
+
+                if (string.IsNullOrEmpty(userName))
+                    return new SignedInDetail
+                    {
+                        UserName = "",
+                        IsAdmin = false,
+                    };
+
+                // Find the user by username
+                var user = await _userManager.FindByNameAsync(userName);
+
+                if (user == null)
+                    return new SignedInDetail
+                    {
+                        UserName = "",
+                        IsAdmin = false,
+                    };
+
+                // Get the roles for the user
+                var roles = await _userManager.GetRolesAsync(user);
+
+                // Check if the user has the "admin" or "ADMIN" role
+                bool isAdmin = roles.Any(r => r.Equals("admin",
+                    StringComparison.OrdinalIgnoreCase));
+
+                return new SignedInDetail
+                {
+                    UserName = user.UserName!,
+                    IsAdmin = isAdmin
+                };
+            }
+            catch (Exception)
+            {
+                return new SignedInDetail
+                {
+                    UserName = "",
+                    IsAdmin = false,
+                };
             }
         }
     }

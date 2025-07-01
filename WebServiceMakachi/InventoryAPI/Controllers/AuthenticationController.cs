@@ -76,8 +76,7 @@ public class AuthenticationController : ControllerBase
         if (validUser is null)
             return null!;
         
-        if (CompareValues(data.UserName, validUser.UserName!) &&
-            CompareValues(data.Email, validUser.Email!))
+        if (CompareValues(data.UserName, validUser.UserName!))  //CompareValues(data.Email, validUser.Email!))
         {
             return new UserData(validUser.Id,validUser.UserName!);
         }
