@@ -127,6 +127,10 @@ public class InventoryDbContext : DbContext
                   .HasColumnType("decimal(18,2)")
                   .IsRequired();
 
+            entity.Property(e => e.FinalPrice)
+            .HasColumnType("decimal(18,2)")
+            .IsRequired();
+
             entity.Property(e => e.Discount)
                   .HasColumnType("decimal(5,2)") // If it's a percentage e.g., 15.50%
                   .IsRequired(false);
@@ -145,6 +149,9 @@ public class InventoryDbContext : DbContext
                   .WithMany() // If Product has a List<Stock>, use .WithMany(p => p.Stocks)
                   .HasForeignKey(e => e.ProductId)
                   .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(e => e.StockNumber)
+                  .IsRequired();
         });
 
         modelBuilder.Entity<Sales>(entity =>
