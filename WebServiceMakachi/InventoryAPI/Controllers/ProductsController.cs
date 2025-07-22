@@ -243,5 +243,59 @@ namespace InventoryAPI.Controllers
                 });
             }
         }
+
+
+        [HttpGet("GetProductByBarCodeNumber")]
+        public async Task<ActionResult<ProductDTO>> GetProductByBarCodeNumber([FromQuery] string barcodenumber)
+        {
+            ProductDTO product = new ProductDTO();
+            try
+            {
+                var stockdetails = _inventoryDb.Stocks
+                    .Include(p => p.Product).ToList();
+                var result = stockdetails.Where(p => p.Product.BarCodeNumber == barcodenumber).FirstOrDefault();
+
+                if (String.IsNullOrWhiteSpace(barcodenumber))
+                    return BadRequest(new ResponseModel
+                    {
+                        Status = "Failed",
+                        Description = "Barcodenumber is required"
+                    });
+
+                var productByBarcodenumber = await _inventoryDb.Products
+                    .Include(s => s.Variants)
+                    .FirstOrDefaultAsync(x => x.BarCodeNumber == barcodenumber);
+
+                if (productByBarcodenumber is null)
+                    return BadRequest(new ResponseModel
+                    {
+                        Status = "Failed",
+                        Description = "Product is not found"
+                    });
+                else
+                {
+                    product.ProductName = productByBarcodenumber.ProductName;
+                    product.ProductDescription = productByBarcodenumber.ProductDescription;
+                    product.SKU = productByBarcodenumber.SKU;
+                    product.BarCodeNumber = productByBarcodenumber.BarCodeNumber;
+                    product.Discount = result?.Discount ?? 0.00m;
+                    product.Variants = productByBarcodenumber.Variants.Select(x => new VariantDTO
+                    {
+                        Size = x.Size,
+                        Price = x.Price,
+                        Color = x.Color
+                    }).ToList();
+                }
+                return Ok(product);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new ResponseModel
+                {
+                    Status = "ServerError",
+                    Description = serverErrorMessage
+                });
+            }
+        }
     }
 }
