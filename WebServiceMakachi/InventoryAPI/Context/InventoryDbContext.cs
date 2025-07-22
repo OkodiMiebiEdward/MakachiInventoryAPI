@@ -163,6 +163,10 @@ public class InventoryDbContext : DbContext
                 .IsRequired();
 
             // Quantity is required
+            entity.Property(s => s.Barcodenumber)
+                .IsRequired();
+
+            // Quantity is required
             entity.Property(s => s.Quantity)
                 .IsRequired();
 
