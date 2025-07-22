@@ -1,5 +1,6 @@
 ﻿using InventoryAPI.Context;
 using InventoryAPI.Model;
+using InventoryAPI.Model.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -49,7 +50,8 @@ namespace InventoryAPI.Controllers
                     //Test123456@
 
                     //John
-                    //Test123456&
+                    //new password:Test123456& 
+                    //old password:Test123456++
 
                     //Susan
                     //Test123456%
@@ -614,6 +616,77 @@ namespace InventoryAPI.Controllers
                     UserName = "",
                     IsAdmin = false,
                 };
+            }
+        }
+
+        [HttpPost("ChangePassword")]
+        public async Task<ActionResult<ResponseModel>> ChangePassword([FromBody]PasswordDTO user)
+        {
+            try
+            {
+                if (user is null)
+                    return BadRequest("Invalid data");
+
+                if (user.Username is null)
+                    return BadRequest("Username is required");
+
+                if (user.OldPassword == "")
+                    return BadRequest("Password is required");
+
+                if (user.NewPassword == "")
+                    return BadRequest("New password must be provided");
+                
+                var validUser = await _userManager.FindByNameAsync(user.Username.Trim()!);
+
+                if (validUser is null)
+                {
+                    return NotFound(new ResponseModel
+                    {
+                        Status = "Error",
+                        Description = "User not found"
+                    });
+                }
+                else
+                {
+                    var isPasswordValid = await _userManager.
+                        CheckPasswordAsync(validUser!, user.OldPassword.Trim()!);
+
+                    if (isPasswordValid)
+                    {
+                        var changeAction = await _userManager
+                             .ChangePasswordAsync(validUser, user.OldPassword.Trim(), user.NewPassword.Trim());
+
+                        ActionResult output = changeAction.Succeeded switch
+                        {
+                            true => Ok(new ResponseModel
+                            {
+                                Status = "Success",
+                                Description = "Password successfully changed"
+                            }),
+                            false => BadRequest(new ResponseModel
+                            {
+                                Status = "Error",
+                                Description = string.Join("; ", changeAction.Errors
+                                .Select(e => e.Description))
+                            })
+                        };
+                        return output;
+                    }
+                    else
+                        return BadRequest(new ResponseModel
+                        {
+                            Status = "Error",
+                            Description = "Password mismatch, check current password"
+                        });
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new ResponseModel
+                {
+                    Status = "ServerError",
+                    Description = serverErrorMessage
+                });
             }
         }
     }

@@ -19,4 +19,6 @@ public class StockDTO
     [Required]
     public int ProductId { get; set; }
     public string ProductName { get; set; }
+    public string StockNumber { get; set; } = "";
+    public decimal? FinalPrice { get; set; }
 }

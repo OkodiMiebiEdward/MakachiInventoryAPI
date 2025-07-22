@@ -26,6 +26,7 @@ namespace InventoryAPI.Controllers
         [HttpPost("CreateStock")]
         public async Task<ActionResult<ResponseModel>> CreateStock([FromBody] StockDTO stock)
         {
+            decimal? finalPrice = 0.00m;
             try
             {
                 if (stock is null)
@@ -46,6 +47,11 @@ namespace InventoryAPI.Controllers
                     });
                 }
 
+                #region FinalSellingPriceCalculation
+                var discountedPrice = (stock.Discount / 100) * stock.SellingUnitPrice;
+                finalPrice = (stock.SellingUnitPrice - discountedPrice) * stock.QuantityInStock;
+                #endregion
+
                 #region getStock
                 var stockToCheck = new Stock
                 {
@@ -56,7 +62,9 @@ namespace InventoryAPI.Controllers
                     CostUnitPrice = stock.CostUnitPrice,
                     SellingUnitPrice = stock.SellingUnitPrice,
                     Discount = stock.Discount,
-                    CreatedAt = stock.CreatedAt
+                    CreatedAt = stock.CreatedAt,
+                    StockNumber = stock.StockNumber,
+                    FinalPrice = finalPrice
                 };
                 #endregion
 
@@ -73,6 +81,8 @@ namespace InventoryAPI.Controllers
                     existingStock.SellingUnitPrice = stockToCheck.SellingUnitPrice;
                     existingStock.Discount = stockToCheck.Discount;
                     existingStock.CreatedAt = stockToCheck.CreatedAt;
+                    existingStock.StockNumber = stockToCheck.StockNumber;
+                    existingStock.FinalPrice = stockToCheck.FinalPrice;
                     _inventoryDbContext.Stocks.Update(existingStock);
 
                     await _inventoryDbContext.SaveChangesAsync();
@@ -124,7 +134,9 @@ namespace InventoryAPI.Controllers
                     CostUnitPrice = s.CostUnitPrice,
                     SellingUnitPrice = s.SellingUnitPrice,
                     Discount = s.Discount,
-                    CreatedAt = s.CreatedAt
+                    CreatedAt = s.CreatedAt,
+                    StockNumber = s.StockNumber,
+                    FinalPrice = s.FinalPrice
 
                 }).ToList();
 
@@ -153,6 +165,7 @@ namespace InventoryAPI.Controllers
 
                 var getStock = await _inventoryDbContext.Stocks
                     .Include(s => s.Category)
+                    .Include(s => s.Product)
                     .FirstOrDefaultAsync(x => x.Id == id);
 
                 stockResponse = new StockDTO
@@ -163,7 +176,11 @@ namespace InventoryAPI.Controllers
                     SellingUnitPrice = getStock.SellingUnitPrice,
                     Discount = getStock.Discount,
                     CreatedAt = getStock.CreatedAt,
-                    CategoryId = getStock.CategoryId
+                    CategoryId = getStock.CategoryId,
+                    StockNumber = getStock.StockNumber,
+                    ProductName = getStock.Product.ProductName,
+                    ProductId = getStock.ProductId,
+                    FinalPrice = getStock.FinalPrice ?? 0.00m
                 };
 
                 if (stockResponse is not null)
