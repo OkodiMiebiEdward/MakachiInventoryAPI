@@ -22,6 +22,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
 // Add Identity services
 builder.Services.AddIdentity<User, RoleTb>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -54,15 +55,27 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Add CORS services
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowAll", builder =>
+//    {
+//        builder.AllowAnyOrigin()
+//               .AllowAnyMethod()
+//               .AllowAnyHeader();
+//    });
+//});
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
+        policy.WithOrigins("http://corelead-001-site1.anytempurl.com", "https://corelead-001-site1.anytempurl.com") // or your actual frontend URL
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
+
 
 var app = builder.Build();
 
@@ -72,8 +85,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+if (app.Environment.IsProduction())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-app.UseCors("AllowAll");
+app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();

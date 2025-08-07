@@ -55,9 +55,6 @@ public class InventoryDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(200);
 
-            entity.Property(p => p.Price)
-                .HasColumnType("decimal(18,2)"); // Precision: 18, Scale: 2
-
             // Define relationship with Product table (Many-to-One)
             entity.HasOne(v => v.Product)
                 .WithMany(p => p.Variants) // Assuming Product has a List<Variant>
@@ -93,6 +90,9 @@ public class InventoryDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(50)
                 .IsUnicode(false);
+
+            entity.Property(p => p.Price)
+               .HasColumnType("decimal(18,2)"); // Precision: 18, Scale: 2
 
             // Define relationship with Category (Many-to-One)
             entity.HasOne(p => p.Category)

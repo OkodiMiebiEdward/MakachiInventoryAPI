@@ -66,14 +66,14 @@ namespace InventoryAPI.Controllers
                     ProductDescription = product.ProductDescription,
                     CategoryId = product.CategoryId,
                     //Category = category,
+                    Price = product.Price,
                     SKU = product.SKU,
                     BarCodeNumber = product.BarCodeNumber,
                     Variants = product.Variants
                               .Select(x => new Variant()
                               {
                                   Color = x.Color,
-                                  Size = x.Size,
-                                  Price = x.Price
+                                  Size = x.Size
                               }).ToList()
                 };
                 #endregion
@@ -90,6 +90,7 @@ namespace InventoryAPI.Controllers
                     existingProduct.ProductName = productToCheck.ProductName;
                     existingProduct.CategoryId = productToCheck.CategoryId;
                     existingProduct.Variants = productToCheck.Variants;
+                    existingProduct.Price = productToCheck.Price;
                     _inventoryDb.Products.Update(existingProduct);
 
                     await _inventoryDb.SaveChangesAsync();
@@ -138,11 +139,11 @@ namespace InventoryAPI.Controllers
                     CategoryId = p.CategoryId,
                     SKU = p.SKU,
                     BarCodeNumber = p.BarCodeNumber,
+                    Price = p.Price,
                     Variants = p.Variants.Select(v => new VariantDTO
                     {
                         Size = v.Size,
-                        Color = v.Color,
-                        Price = v.Price
+                        Color = v.Color
                     }).ToList()
                 }).ToList();
 
@@ -177,11 +178,11 @@ namespace InventoryAPI.Controllers
                     CategoryId = getProduct.CategoryId,
                     SKU = getProduct.SKU,
                     BarCodeNumber = getProduct.BarCodeNumber,
+                    Price = getProduct.Price,
                     Variants = getProduct.Variants.Select(v => new VariantDTO
                     {
                         Size = v.Size,
-                        Color = v.Color,
-                        Price = v.Price
+                        Color = v.Color
                     }).ToList()
                 };
 
@@ -279,10 +280,10 @@ namespace InventoryAPI.Controllers
                     product.SKU = productByBarcodenumber.SKU;
                     product.BarCodeNumber = productByBarcodenumber.BarCodeNumber;
                     product.Discount = result?.Discount ?? 0.00m;
+                    product.Price = productByBarcodenumber.Price;
                     product.Variants = productByBarcodenumber.Variants.Select(x => new VariantDTO
                     {
                         Size = x.Size,
-                        Price = x.Price,
                         Color = x.Color
                     }).ToList();
                 }

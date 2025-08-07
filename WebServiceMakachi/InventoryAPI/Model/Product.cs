@@ -9,5 +9,6 @@ public class Product
     public Category Category { get; set; }
     public string SKU { get; set; }
     public string BarCodeNumber { get; set; }
+    public decimal Price { get; set; }
     public List<Variant> Variants { get; set; } = new List<Variant>();
 }
