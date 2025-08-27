@@ -29,8 +29,8 @@ namespace InventoryAPI.Controllers
             try
             {
                 // 1. Retrieve the product by barcode number
-                var product = await _dbContext.Products
-                    .FirstOrDefaultAsync(p => p.BarCodeNumber == barCodeNumber);
+                var product = await _dbContext.Stocks
+                    .FirstOrDefaultAsync(s => s.BarCodeNumber == barCodeNumber);
 
                 if (product == null)
                 {

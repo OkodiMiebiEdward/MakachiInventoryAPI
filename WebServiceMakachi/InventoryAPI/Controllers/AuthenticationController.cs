@@ -62,7 +62,7 @@ public class AuthenticationController : ControllerBase
             _config.GetValue<string>("Authentication:Audience"),
             claims,
             DateTime.UtcNow, // When this token becomes valid
-            DateTime.UtcNow.AddMinutes(600), // When the token will expire
+            DateTime.UtcNow.AddHours(24), // When the token will expIre
             signingCredentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
