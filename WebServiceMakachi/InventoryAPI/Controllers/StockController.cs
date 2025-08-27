@@ -49,7 +49,7 @@ namespace InventoryAPI.Controllers
 
                 #region FinalSellingPriceCalculation
                 var discountedPrice = (stock.Discount / 100) * stock.SellingUnitPrice;
-                finalPrice = (stock.SellingUnitPrice - discountedPrice) * stock.QuantityInStock;
+                finalPrice = stock.SellingUnitPrice - discountedPrice;
                 #endregion
 
                 #region getStock
@@ -64,7 +64,8 @@ namespace InventoryAPI.Controllers
                     Discount = stock.Discount,
                     CreatedAt = stock.CreatedAt,
                     StockNumber = stock.StockNumber,
-                    FinalPrice = finalPrice
+                    FinalPrice = finalPrice,
+                    BarCodeNumber = stock.BarCodeNumber
                 };
                 #endregion
 
@@ -83,6 +84,7 @@ namespace InventoryAPI.Controllers
                     existingStock.CreatedAt = stockToCheck.CreatedAt;
                     existingStock.StockNumber = stockToCheck.StockNumber;
                     existingStock.FinalPrice = stockToCheck.FinalPrice;
+                    existingStock.BarCodeNumber = stockToCheck.BarCodeNumber;
                     _inventoryDbContext.Stocks.Update(existingStock);
 
                     await _inventoryDbContext.SaveChangesAsync();
@@ -136,7 +138,8 @@ namespace InventoryAPI.Controllers
                     Discount = s.Discount,
                     CreatedAt = s.CreatedAt,
                     StockNumber = s.StockNumber,
-                    FinalPrice = s.FinalPrice
+                    FinalPrice = s.FinalPrice,
+                    BarCodeNumber = s.BarCodeNumber
 
                 }).ToList();
 
@@ -180,7 +183,8 @@ namespace InventoryAPI.Controllers
                     StockNumber = getStock.StockNumber,
                     ProductName = getStock.Product.ProductName,
                     ProductId = getStock.ProductId,
-                    FinalPrice = getStock.FinalPrice ?? 0.00m
+                    FinalPrice = getStock.FinalPrice ?? 0.00m,
+                    BarCodeNumber = getStock.BarCodeNumber
                 };
 
                 if (stockResponse is not null)
