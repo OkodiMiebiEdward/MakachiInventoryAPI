@@ -8,6 +8,5 @@ public class Product
     public int CategoryId { get; set; }
     public Category Category { get; set; }
     public string SKU { get; set; }
-    public string BarCodeNumber { get; set; }
     public List<Variant> Variants { get; set; } = new List<Variant>();
 }

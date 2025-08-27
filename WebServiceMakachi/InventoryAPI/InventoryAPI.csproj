@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <Folder Include="Model\IdentityModels\" />
+    <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
 
 </Project>

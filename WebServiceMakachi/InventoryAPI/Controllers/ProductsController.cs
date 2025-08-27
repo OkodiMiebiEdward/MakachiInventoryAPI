@@ -67,13 +67,12 @@ namespace InventoryAPI.Controllers
                     CategoryId = product.CategoryId,
                     //Category = category,
                     SKU = product.SKU,
-                    BarCodeNumber = product.BarCodeNumber,
+                    //BarCodeNumber = product.BarCodeNumber,
                     Variants = product.Variants
                               .Select(x => new Variant()
                               {
                                   Color = x.Color,
-                                  Size = x.Size,
-                                  Price = x.Price
+                                  Size = x.Size
                               }).ToList()
                 };
                 #endregion
@@ -86,7 +85,6 @@ namespace InventoryAPI.Controllers
                     existingProduct.Id = productToCheck.Id;
                     existingProduct.ProductDescription = productToCheck.ProductDescription;
                     existingProduct.SKU = productToCheck.SKU;
-                    existingProduct.BarCodeNumber = productToCheck.BarCodeNumber;
                     existingProduct.ProductName = productToCheck.ProductName;
                     existingProduct.CategoryId = productToCheck.CategoryId;
                     existingProduct.Variants = productToCheck.Variants;
@@ -137,12 +135,11 @@ namespace InventoryAPI.Controllers
                     ProductDescription = p.ProductDescription,
                     CategoryId = p.CategoryId,
                     SKU = p.SKU,
-                    BarCodeNumber = p.BarCodeNumber,
+                    //BarCodeNumber = p.BarCodeNumber,
                     Variants = p.Variants.Select(v => new VariantDTO
                     {
                         Size = v.Size,
-                        Color = v.Color,
-                        Price = v.Price
+                        Color = v.Color
                     }).ToList()
                 }).ToList();
 
@@ -176,12 +173,11 @@ namespace InventoryAPI.Controllers
                     ProductDescription = getProduct.ProductDescription,
                     CategoryId = getProduct.CategoryId,
                     SKU = getProduct.SKU,
-                    BarCodeNumber = getProduct.BarCodeNumber,
+                    //BarCodeNumber = getProduct.BarCodeNumber,
                     Variants = getProduct.Variants.Select(v => new VariantDTO
                     {
                         Size = v.Size,
-                        Color = v.Color,
-                        Price = v.Price
+                        Color = v.Color
                     }).ToList()
                 };
 
@@ -246,14 +242,15 @@ namespace InventoryAPI.Controllers
 
 
         [HttpGet("GetProductByBarCodeNumber")]
-        public async Task<ActionResult<ProductDTO>> GetProductByBarCodeNumber([FromQuery] string barcodenumber)
+        public async Task<ActionResult<StockDTO>> GetProductByBarCodeNumber([FromQuery] string barcodenumber)
         {
-            ProductDTO product = new ProductDTO();
+            StockDTO stockItem = new();
             try
             {
                 var stockdetails = _inventoryDb.Stocks
-                    .Include(p => p.Product).ToList();
-                var result = stockdetails.Where(p => p.Product.BarCodeNumber == barcodenumber).FirstOrDefault();
+                    .Include(p => p.Product)
+                    .ToList();
+                var result = stockdetails.Where(p => p.BarCodeNumber == barcodenumber).FirstOrDefault();
 
                 if (String.IsNullOrWhiteSpace(barcodenumber))
                     return BadRequest(new ResponseModel
@@ -262,8 +259,7 @@ namespace InventoryAPI.Controllers
                         Description = "Barcodenumber is required"
                     });
 
-                var productByBarcodenumber = await _inventoryDb.Products
-                    .Include(s => s.Variants)
+                var productByBarcodenumber = await _inventoryDb.Stocks
                     .FirstOrDefaultAsync(x => x.BarCodeNumber == barcodenumber);
 
                 if (productByBarcodenumber is null)
@@ -274,19 +270,14 @@ namespace InventoryAPI.Controllers
                     });
                 else
                 {
-                    product.ProductName = productByBarcodenumber.ProductName;
-                    product.ProductDescription = productByBarcodenumber.ProductDescription;
-                    product.SKU = productByBarcodenumber.SKU;
-                    product.BarCodeNumber = productByBarcodenumber.BarCodeNumber;
-                    product.Discount = result?.Discount ?? 0.00m;
-                    product.Variants = productByBarcodenumber.Variants.Select(x => new VariantDTO
-                    {
-                        Size = x.Size,
-                        Price = x.Price,
-                        Color = x.Color
-                    }).ToList();
+                    stockItem.BarCodeNumber = productByBarcodenumber.BarCodeNumber;
+                    stockItem.ProductName = productByBarcodenumber.Product.ProductName;
+                    stockItem.Discount = productByBarcodenumber.Discount;
+                    stockItem.SellingUnitPrice = productByBarcodenumber.SellingUnitPrice;
+                    stockItem.FinalPrice = productByBarcodenumber.FinalPrice;
+                    stockItem.StockNumber = productByBarcodenumber.StockNumber;
                 }
-                return Ok(product);
+                return Ok(stockItem);
             }
             catch (Exception)
             {

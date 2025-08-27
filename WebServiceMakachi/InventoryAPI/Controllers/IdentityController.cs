@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Dynamic;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace InventoryAPI.Controllers
     [ApiController]
     public class IdentityController : ControllerBase
     {
+
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<RoleTb> _roleManager;
         private readonly ApplicationDbContext _dbContext;
