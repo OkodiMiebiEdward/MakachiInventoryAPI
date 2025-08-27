@@ -55,9 +55,6 @@ public class InventoryDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(200);
 
-            entity.Property(p => p.Price)
-                .HasColumnType("decimal(18,2)"); // Precision: 18, Scale: 2
-
             // Define relationship with Product table (Many-to-One)
             entity.HasOne(v => v.Product)
                 .WithMany(p => p.Variants) // Assuming Product has a List<Variant>
@@ -89,10 +86,10 @@ public class InventoryDbContext : DbContext
                 .IsUnicode(false);
 
             // Configure BarCodeNumber property
-            entity.Property(p => p.BarCodeNumber)
-                .IsRequired()
-                .HasMaxLength(50)
-                .IsUnicode(false);
+            //entity.Property(p => p.BarCodeNumber)
+            //    .IsRequired()
+            //    .HasMaxLength(50)
+            //    .IsUnicode(false);
 
             // Define relationship with Category (Many-to-One)
             entity.HasOne(p => p.Category)
@@ -109,7 +106,7 @@ public class InventoryDbContext : DbContext
 
             // Add an index for faster lookup on SKU and BarCodeNumber
             entity.HasIndex(p => p.SKU).IsUnique();
-            entity.HasIndex(p => p.BarCodeNumber).IsUnique();
+            //entity.HasIndex(p => p.BarCodeNumber).IsUnique();
         });
 
         modelBuilder.Entity<Stock>(entity =>
@@ -152,6 +149,12 @@ public class InventoryDbContext : DbContext
 
             entity.Property(e => e.StockNumber)
                   .IsRequired();
+
+            // Configure BarCodeNumber property
+            entity.Property(p => p.BarCodeNumber)
+                .IsRequired()
+                .HasMaxLength(50)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<Sales>(entity =>

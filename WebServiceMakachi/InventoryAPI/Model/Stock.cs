@@ -15,5 +15,6 @@ public class Stock
     public int ProductId { get; set; }
     public Product Product { get; set; }
     public string StockNumber { get; set; }
+    public string BarCodeNumber { get; set; }
     public decimal? FinalPrice { get; set; }
 }
