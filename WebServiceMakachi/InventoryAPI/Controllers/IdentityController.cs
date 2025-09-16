@@ -92,50 +92,108 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        //[HttpPost("Login")]
+        //public async Task<ActionResult<ResponseModel>> UserLogin([FromBody] AuthenticationData? loginDetail)
+        //{
+        //    try
+        //    {
+        //        if (loginDetail is null)
+        //            return BadRequest("Invalid data");
+
+        //        if (loginDetail.Password == "")
+        //            return BadRequest("Password is required");
+
+        //        var validUser = await _userManager.FindByNameAsync(loginDetail.UserName!);
+
+        //        if (validUser is null)
+        //        {
+        //            return NotFound(new ResponseModel
+        //            {
+        //                Status = "Error",
+        //                Description = "User not found"
+        //            });
+        //        }
+        //        else
+        //        {
+        //            var isPasswordValid = await _userManager.CheckPasswordAsync(validUser!, loginDetail.Password!);
+        //            var output = isPasswordValid switch
+        //            {
+        //                true => StatusCode(200, new ResponseModel
+        //                {
+        //                    Status = "Success",
+        //                    Description = "Login successful"
+        //                }),
+
+        //                false => StatusCode(400, new ResponseModel
+        //                {
+        //                    Status = "Error",
+        //                    Description = "Login unsuccessful"
+        //                })
+        //            };
+        //            return output;
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return StatusCode(500, new ResponseModel
+        //        {
+        //            Status = "ServerError",
+        //            Description = serverErrorMessage
+        //        });
+        //    }
+        //}
+
         [HttpPost("Login")]
         public async Task<ActionResult<ResponseModel>> UserLogin([FromBody] AuthenticationData? loginDetail)
         {
             try
             {
-                if (loginDetail is null)
-                    return BadRequest("Invalid data");
-
-                //if (loginDetail.Email == "")
-                //    return BadRequest("Email is required");
-
-                if (loginDetail.Password == "")
-                    return BadRequest("Password is required");
-
-                //var validUser = await _userManager.FindByEmailAsync(loginDetail.Email!);
-                var validUser = await _userManager.FindByNameAsync(loginDetail.UserName!);
-
-                if (validUser is null)
+                if (loginDetail == null ||
+                    string.IsNullOrWhiteSpace(loginDetail.UserName) ||
+                    string.IsNullOrWhiteSpace(loginDetail.Password))
                 {
-                    return NotFound(new ResponseModel
+                    return BadRequest(new ResponseModel
                     {
                         Status = "Error",
-                        Description = "User not found"
+                        Description = "Username and password are required"
                     });
                 }
-                else
-                {
-                    var isPasswordValid = await _userManager.CheckPasswordAsync(validUser!, loginDetail.Password!);
-                    var output = isPasswordValid switch
-                    {
-                        true => StatusCode(200, new ResponseModel
-                        {
-                            Status = "Success",
-                            Description = "Login successful"
-                        }),
 
-                        false => StatusCode(400, new ResponseModel
-                        {
-                            Status = "Error",
-                            Description = "Login unsuccessful"
-                        })
-                    };
-                    return output;
+                // Find all users with a username that matches case-insensitively
+                var users = await _dbContext.Users
+                    .Where(u => u.UserName.ToLower() == loginDetail.UserName.ToLower())
+                    .ToListAsync();
+
+                // Now filter for a case-sensitive match
+                var caseSensitiveUser = users
+                    .FirstOrDefault(u => u.UserName == loginDetail.UserName);
+
+                if (caseSensitiveUser == null)
+                {
+                    return Unauthorized(new ResponseModel
+                    {
+                        Status = "Error",
+                        Description = "Invalid username or password"
+                    });
                 }
+
+                // Re-fetch using UserManager to ensure all Identity fields are loaded
+                var validUser = await _userManager.FindByIdAsync(caseSensitiveUser.Id);
+
+                if (validUser == null || !await _userManager.CheckPasswordAsync(validUser, loginDetail.Password))
+                {
+                    return Unauthorized(new ResponseModel
+                    {
+                        Status = "Error",
+                        Description = "Invalid username or password"
+                    });
+                }
+
+                return Ok(new ResponseModel
+                {
+                    Status = "Success",
+                    Description = "Login successful"
+                });
             }
             catch (Exception)
             {
