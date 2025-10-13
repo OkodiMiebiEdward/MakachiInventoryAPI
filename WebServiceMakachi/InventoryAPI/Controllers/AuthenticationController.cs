@@ -28,7 +28,11 @@ public class AuthenticationController : ControllerBase
     public record AuthenticationData(string? UserName, string? Password, string? Email = "", string Phonenumber = "");
     public record UserData(string UserId, string UserName);
 
-    // api/Authentication/token
+    
+    /// <summary>
+    /// Authenticates a user by given valid token if the user actually exists.
+    /// </summary>
+    /// <returns>A valid token</returns>
     [HttpPost("token")]
     [AllowAnonymous]
     public async Task<ActionResult<string>> Authenticate([FromBody] AuthenticationData data)
@@ -41,7 +45,6 @@ public class AuthenticationController : ControllerBase
         }
 
         var token = GenerateToken(user);
-
         return Ok(token);
     }
 

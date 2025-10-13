@@ -27,4 +27,9 @@
     <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
 
+    <PropertyGroup>
+	    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+	    <NoWarn>$(NoWarn);1591</NoWarn>
+	    <!-- Optional: suppress warnings for missing docs -->
+    </PropertyGroup>
 </Project>

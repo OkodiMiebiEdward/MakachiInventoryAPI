@@ -19,6 +19,17 @@ namespace InventoryAPI.Controllers
             _inventoryDbContext = inventoryDbContext;
         }
 
+
+        /// <summary>
+        /// Creates a new category or updates an existing one if the name already exists.
+        /// </summary>
+        /// <param name="category">The category object to create or update.</param>
+        /// <returns>
+        /// <para>201 Created if a new category is created.</para>
+        /// <para>200 OK if an existing category is updated.</para>
+        /// <para>400 Bad Request if input is invalid.</para>
+        /// <para>500 Internal Server Error on server failure.</para>
+        /// </returns>
         [HttpPost("CreateCategory")]
         public async Task<ActionResult<ResponseModel>> CreateCategory([FromBody] Category category)
         {
@@ -85,6 +96,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves all categories.
+        /// </summary>
+        /// <returns>
+        /// <para>200 OK with a list of categories.</para>
+        /// <para>500 Internal Server Error on server failure.</para>
+        /// </returns>
         [HttpGet("GetCategories")]
         public async Task<ActionResult<List<Category>>> GetCategories()
         {
@@ -104,7 +122,16 @@ namespace InventoryAPI.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Retrieves a category by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the category.</param>
+        /// <returns>
+        /// <para>200 OK with the category if found.</para>
+        /// <para>400 Bad Request if the id is not provided or invalid.</para>
+        /// <para>404 Not Found if the category does not exist.</para>
+        /// <para>500 Internal Server Error on server failure.</para>
+        /// </returns>
         [HttpGet("GetCategory")]
         public ActionResult<Category> GetCategory([FromQuery]int id)
         {
@@ -132,6 +159,16 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a category by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the category to delete.</param>
+        /// <returns>
+        /// <para>200 OK if the category is deleted.</para>
+        /// <para>400 Bad Request if the id is not provided.</para>
+        /// <para>404 Not Found if the category does not exist.</para>
+        /// <para>500 Internal Server Error on server failure.</para>
+        /// </returns>
         [HttpDelete("DeleteCategory")]
         public async Task<ActionResult> DeleteCategory([FromQuery] int? id)
         {
