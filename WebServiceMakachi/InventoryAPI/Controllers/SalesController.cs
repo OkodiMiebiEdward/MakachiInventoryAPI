@@ -23,7 +23,14 @@ namespace InventoryAPI.Controllers
             _inventoryDbContext = inventoryDbContext;
         }
 
-
+        /// <summary>
+        /// Creates a new sale record for a product based on the provided sales data.
+        /// </summary>
+        /// <param name="sales">The sales data for the product.</param>
+        /// <returns>
+        /// 201 Created with the sale details if successful, 400 Bad Request if input is invalid or 
+        /// product does not exist, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpPost("CreateSale")]
         public async Task<ActionResult<SalesDTO>> CreateSales([FromBody] SalesDTO sales)
         {
@@ -36,62 +43,7 @@ namespace InventoryAPI.Controllers
                         Status = "Failed",
                         Description = "Provide valid data"
                     });
-
-                #region sale Calculation(Previous)
-                //var productStocks = _inventoryDbContext.Stocks
-                //    .Include(s => s.Product)
-                //    .Where(s => s.Product.BarCodeNumber == sales.Barcodenumber)
-                //    .ToList();
-
-                //if (productStocks.Count > 0)
-                //{
-                //    int totalQuantity = productStocks.Sum(s => s.QuantityInStock);
-                //    if (totalQuantity >= sales.Quantity)
-                //    {
-                //        var stockToUpdate = productStocks
-                //            .OrderBy(s => s.CreatedAt)
-                //            .FirstOrDefault(s => s.QuantityInStock >= sales.Quantity);
-
-                //        if (stockToUpdate != null)
-                //        {
-                //            //stockToUpdate.QuantityInStock -= sales.Quantity;
-                //            _inventoryDbContext.SaveChanges();
-
-                //            sale.StockId = productStocks.First().ProductId;
-                //            sale.Quantity = sales.Quantity;
-                //            sale.PriceSold = sales.PriceSold;
-                //            sale.Discount = sales.Discount;
-                //            sale.Barcodenumber = sales.Barcodenumber;
-
-                //            await _inventoryDbContext.AddAsync(sale);
-                //            await _inventoryDbContext.SaveChangesAsync();
-                //            return StatusCode(201, sale);
-                //        }
-                //        else
-                //        {
-                //            return StatusCode(400, new ResponseModel
-                //            {
-                //                Status = "Failed",
-                //                Description = "No individual stock row has enough quantity"
-                //            });
-                //        }
-                //    }
-                //    else
-                //    {
-                //        return StatusCode(400, new ResponseModel
-                //        {
-                //            Status = "Failed",
-                //            Description = "No individual stock row has enough quantity"
-                //        });
-                //    }
-                //}
-                //else
-                //    return StatusCode(400, new ResponseModel
-                //    {
-                //        Status = "Failed",
-                //        Description = $"No product attached to this barcode {sales.Barcodenumber}"
-                //    });
-                #endregion
+                
 
                 var productStocks = _inventoryDbContext.Stocks
                     .Include(s => s.Product)
@@ -126,6 +78,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Removes a sale record based on the provided sales data.
+        /// </summary>
+        /// <param name="sales">The sales data to identify the sale to remove.</param>
+        /// <returns>
+        /// 200 OK if the operation is successful, 400 Bad Request if input is invalid or item not found, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpPost("RemoveSale")]
         public ActionResult RemoveSale([FromBody] SalesDTO sales)
         {
@@ -172,6 +131,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Processes a checkout operation and generates a receipt for the transaction.
+        /// </summary>
+        /// <param name="checkout">The checkout data including items and user information.</param>
+        /// <returns>
+        /// 200 OK with the receipt details if successful, 400 Bad Request if input is invalid, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpPost("Checkout")]
         public async Task<ActionResult> CheckoutReceipt([FromBody] Checkout checkout)
         {

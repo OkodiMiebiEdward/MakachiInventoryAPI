@@ -10,6 +10,7 @@ namespace InventoryAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class StockController : ControllerBase
     {
         private readonly IConfiguration _config;
@@ -23,6 +24,14 @@ namespace InventoryAPI.Controllers
             _inventoryDbContext = inventoryDbContext;
         }
 
+
+        /// <summary>
+        /// Creates a new stock record or updates an existing stock if the ID matches.
+        /// </summary>
+        /// <param name="stock">The stock data to create or update.</param>
+        /// <returns>
+        /// 201 Created if a new stock is created, 200 OK if updated, 400 Bad Request for invalid input, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpPost("CreateStock")]
         public async Task<ActionResult<ResponseModel>> CreateStock([FromBody] StockDTO stock)
         {
@@ -115,6 +124,12 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves all stock records with product and category details.
+        /// </summary>
+        /// <returns>
+        /// 200 OK with a list of stocks, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpGet("GetStocks")]
         public async Task<ActionResult<List<StockDTO>>> GetStocks()
         {
@@ -155,6 +170,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves a single stock record by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the stock.</param>
+        /// <returns>
+        /// 200 OK with the stock if found, 400 Bad Request if ID is missing, 404 Not Found if not found, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpGet("GetStock")]
         public async Task<ActionResult<StockDTO>> GetStock([FromQuery] int id)
         {
@@ -202,6 +224,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a stock record by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the stock to delete.</param>
+        /// <returns>
+        /// 200 OK if deleted, 400 Bad Request if ID is missing, 404 Not Found if not found, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpDelete("DeleteStock")]
         public async Task<ActionResult> DeleteStock([FromQuery] int? id)
         {

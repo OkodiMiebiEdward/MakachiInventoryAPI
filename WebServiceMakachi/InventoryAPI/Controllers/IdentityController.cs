@@ -36,6 +36,14 @@ namespace InventoryAPI.Controllers
             _signInManager = signInManager;
         }
 
+
+        /// <summary>
+        /// Creates a new user account.
+        /// </summary>
+        /// <param name="data">The authentication data containing username, email, phone number, and password.</param>
+        /// <returns>
+        /// 201 Created if successful, 400 Bad Request if input is invalid, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpPost("CreateUser")]
         [AllowAnonymous]
         public async Task<ActionResult<ResponseModel>> CreateUser([FromBody] AuthenticationData data)
@@ -47,18 +55,6 @@ namespace InventoryAPI.Controllers
 
                 var user = await _userManager.CreateAsync(new User
                 {
-                    #region Test Login
-                    //ADMIN
-                    //Test123456@
-
-                    //John
-                    //new password:Test123456& 
-                    //old password:Test123456++
-
-                    //Susan
-                    //Test123456%
-                    #endregion
-
                     UserName = data.UserName,
                     Email = data.Email,
                     EmailConfirmed = false,
@@ -92,50 +88,65 @@ namespace InventoryAPI.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Authenticates a user and logs them in.
+        /// </summary>
+        /// <param name="loginDetail">The login data containing username and password.</param>
+        /// <returns>
+        /// 200 OK if login is successful, 400 Bad Request or 401 Unauthorized if credentials are invalid, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpPost("Login")]
         public async Task<ActionResult<ResponseModel>> UserLogin([FromBody] AuthenticationData? loginDetail)
         {
             try
             {
-                if (loginDetail is null)
-                    return BadRequest("Invalid data");
-
-                //if (loginDetail.Email == "")
-                //    return BadRequest("Email is required");
-
-                if (loginDetail.Password == "")
-                    return BadRequest("Password is required");
-
-                //var validUser = await _userManager.FindByEmailAsync(loginDetail.Email!);
-                var validUser = await _userManager.FindByNameAsync(loginDetail.UserName!);
-
-                if (validUser is null)
+                if (loginDetail == null ||
+                    string.IsNullOrWhiteSpace(loginDetail.UserName) ||
+                    string.IsNullOrWhiteSpace(loginDetail.Password))
                 {
-                    return NotFound(new ResponseModel
+                    return BadRequest(new ResponseModel
                     {
                         Status = "Error",
-                        Description = "User not found"
+                        Description = "Username and password are required"
                     });
                 }
-                else
-                {
-                    var isPasswordValid = await _userManager.CheckPasswordAsync(validUser!, loginDetail.Password!);
-                    var output = isPasswordValid switch
-                    {
-                        true => StatusCode(200, new ResponseModel
-                        {
-                            Status = "Success",
-                            Description = "Login successful"
-                        }),
 
-                        false => StatusCode(400, new ResponseModel
-                        {
-                            Status = "Error",
-                            Description = "Login unsuccessful"
-                        })
-                    };
-                    return output;
+                // Find all users with a username that matches case-insensitively
+                var users = await _dbContext.Users
+                    .Where(u => u.UserName.ToLower() == loginDetail.UserName.ToLower())
+                    .ToListAsync();
+
+                // Now filter for a case-sensitive match
+                var caseSensitiveUser = users
+                    .FirstOrDefault(u => u.UserName == loginDetail.UserName);
+
+                if (caseSensitiveUser == null)
+                {
+                    return Unauthorized(new ResponseModel
+                    {
+                        Status = "Error",
+                        Description = "Invalid username or password"
+                    });
                 }
+
+                // Re-fetch using UserManager to ensure all Identity fields are loaded
+                var validUser = await _userManager.FindByIdAsync(caseSensitiveUser.Id);
+
+                if (validUser == null || !await _userManager.CheckPasswordAsync(validUser, loginDetail.Password))
+                {
+                    return Unauthorized(new ResponseModel
+                    {
+                        Status = "Error",
+                        Description = "Invalid username or password"
+                    });
+                }
+
+                return Ok(new ResponseModel
+                {
+                    Status = "Success",
+                    Description = "Login successful"
+                });
             }
             catch (Exception)
             {
@@ -147,14 +158,16 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Creates a new role or updates an existing role.
+        /// </summary>
+        /// <param name="authRole">The role data containing name and description.</param>
+        /// <returns>
+        /// 200 OK if successful, 400 Bad Request if input is invalid, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpPost("CreateRole")]
         public async Task<ActionResult<ResponseModel>> CreateRole([FromBody] AuthenticationRole? authRole)
         {
-            /*
-               Dummy role
-               RoleName = "Admin"
-               Description = "Managing administrative activities"
-             */
             try
             {
                 if (authRole is null)
@@ -226,6 +239,12 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves all roles in the system.
+        /// </summary>
+        /// <returns>
+        /// 200 OK with a list of roles, 404 Not Found if no roles exist, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpGet("GetRoles")]
         public ActionResult<List<RoleTb>> GetAllRoles()
         {
@@ -250,6 +269,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves a role by its name.
+        /// </summary>
+        /// <param name="roleName">The name of the role to retrieve.</param>
+        /// <returns>
+        /// 200 OK with the role, 400 Bad Request if input is invalid, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpGet("GetRole")]
         public ActionResult<RoleTb> GetRoleByName([FromQuery] string roleName)
         {
@@ -278,6 +304,12 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves all users in the system.
+        /// </summary>
+        /// <returns>
+        /// 200 OK with a list of users, 404 Not Found if no users exist, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpGet("GetAllUsers")]
         public ActionResult<List<User>> GetAllUsers()
         {
@@ -295,6 +327,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves a user by their email address.
+        /// </summary>
+        /// <param name="email">The email address of the user.</param>
+        /// <returns>
+        /// 200 OK with the user, 400 Bad Request or 404 Not Found if not found, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpGet("GetUser")]
         public async Task<ActionResult<User>> GetUserById([FromQuery] string email)
         {
@@ -317,6 +356,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a user account.
+        /// </summary>
+        /// <param name="user">The authentication data containing username and password.</param>
+        /// <returns>
+        /// 200 OK if deleted, 400 Bad Request if input is invalid, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpPost("DeleteUser")]
         public async Task<ActionResult<User>> DeleteUser([FromBody] AuthenticationData user)
         {
@@ -326,8 +372,6 @@ namespace InventoryAPI.Controllers
                     return BadRequest("Provide valid User");
                 else
                 {
-                    //if (string.IsNullOrWhiteSpace(user.Email))
-                    //    return BadRequest("Email is Required");
                     if (string.IsNullOrWhiteSpace(user.Password))
                         return BadRequest("Password is Required");
                     if (string.IsNullOrWhiteSpace(user.UserName))
@@ -344,6 +388,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Assigns a role to a user.
+        /// </summary>
+        /// <param name="assignRole">The assignment data containing username and role.</param>
+        /// <returns>
+        /// 200 OK if successful, 400 Bad Request if input is invalid, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpPost("AssignRolesToUsers")]
         public async Task<ActionResult<ResponseModel>> AssignRolesToUsers([FromBody] AssignRoleVM assignRole)
         {
@@ -400,6 +451,14 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves a user's role assignment by username and role.
+        /// </summary>
+        /// <param name="user">The username.</param>
+        /// <param name="role">The role name.</param>
+        /// <returns>
+        /// 200 OK with the assignment, 400 Bad Request or 404 Not Found if not found, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpGet("GetSingleUserRole")]
         public async Task<ActionResult<AssignRoleVM>> GetSingleUserAndRole([FromQuery] string user, [FromQuery] string role)
         {
@@ -432,6 +491,12 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves all user-role assignments.
+        /// </summary>
+        /// <returns>
+        /// 200 OK with a list of assignments, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpGet("GetUsersAndRoles")]
         public async Task<ActionResult<List<AssignRoleVM>>> GetUsersAndRoles()
         {
@@ -460,6 +525,14 @@ namespace InventoryAPI.Controllers
             return new List<AssignRoleVM>();
         }
 
+
+        /// <summary>
+        /// Deletes a role by its name.
+        /// </summary>
+        /// <param name="roleName">The name of the role to delete.</param>
+        /// <returns>
+        /// 200 OK if deleted, 400 Bad Request or 404 Not Found if not found, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpDelete("DeleteRole")]
         public async Task<ActionResult> DeleteRole([FromQuery] string roleName)
         {
@@ -503,6 +576,14 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Removes a role from a user.
+        /// </summary>
+        /// <param name="userName">The username.</param>
+        /// <param name="roleName">The role name.</param>
+        /// <returns>
+        /// 200 OK if successful, 400 Bad Request or 404 Not Found if not found, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpDelete("RemoveRoleFromUser")]
         public async Task<ActionResult<ResponseModel>> RemoveRoleFromUser([FromQuery] string userName, [FromQuery] string roleName)
         {
@@ -573,6 +654,12 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets the currently signed-in user's details and admin status.
+        /// </summary>
+        /// <returns>
+        /// The signed-in user's username and admin status.
+        /// </returns>
         [HttpGet("GetRoleFromSignedIn")]
         public async Task<SignedInDetail> GetWhoseSignedIn()
         {
@@ -621,6 +708,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Changes a user's password.
+        /// </summary>
+        /// <param name="user">The password change data containing username, old password, and new password.</param>
+        /// <returns>
+        /// 200 OK if successful, 400 Bad Request if input is invalid, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpPost("ChangePassword")]
         public async Task<ActionResult<ResponseModel>> ChangePassword([FromBody]PasswordDTO user)
         {
