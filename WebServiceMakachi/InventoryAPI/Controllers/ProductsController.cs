@@ -22,6 +22,13 @@ namespace InventoryAPI.Controllers
             _config = config;
         }
 
+        /// <summary>
+        /// Creates a new product or updates an existing product if the ID matches.
+        /// </summary>
+        /// <param name="product">The product data to create or update.</param>
+        /// <returns>
+        /// 201 Created if a new product is created, 200 OK if updated, 400 Bad Request for invalid input, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpPost("CreateProduct")]
         public async Task<ActionResult<ResponseModel>> CreateProduct([FromBody] ProductDTO product)
         {
@@ -65,9 +72,7 @@ namespace InventoryAPI.Controllers
                     ProductName = product.ProductName,
                     ProductDescription = product.ProductDescription,
                     CategoryId = product.CategoryId,
-                    //Category = category,
                     SKU = product.SKU,
-                    //BarCodeNumber = product.BarCodeNumber,
                     Variants = product.Variants
                               .Select(x => new Variant()
                               {
@@ -118,7 +123,12 @@ namespace InventoryAPI.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Retrieves all products with their variants.
+        /// </summary>
+        /// <returns>
+        /// 200 OK with a list of products, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpGet("GetProducts")]
         public async Task<ActionResult<List<ProductDTO>>> GetProducts()
         {
@@ -135,7 +145,6 @@ namespace InventoryAPI.Controllers
                     ProductDescription = p.ProductDescription,
                     CategoryId = p.CategoryId,
                     SKU = p.SKU,
-                    //BarCodeNumber = p.BarCodeNumber,
                     Variants = p.Variants.Select(v => new VariantDTO
                     {
                         Size = v.Size,
@@ -155,6 +164,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves a single product by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the product.</param>
+        /// <returns>
+        /// 200 OK with the product if found, 404 Not Found if not found, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpGet("GetProduct")]
         public async Task<ActionResult<ProductDTO>> GetProduct([FromQuery] int id)
         {
@@ -173,7 +189,6 @@ namespace InventoryAPI.Controllers
                     ProductDescription = getProduct.ProductDescription,
                     CategoryId = getProduct.CategoryId,
                     SKU = getProduct.SKU,
-                    //BarCodeNumber = getProduct.BarCodeNumber,
                     Variants = getProduct.Variants.Select(v => new VariantDTO
                     {
                         Size = v.Size,
@@ -196,6 +211,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Deletes a product by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the product to delete.</param>
+        /// <returns>
+        /// 200 OK if deleted, 400 Bad Request if ID is missing, 404 Not Found if not found, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpDelete("DeleteProduct")]
         public async Task<ActionResult> DeleteProduct([FromQuery] int? id)
         {
@@ -240,7 +262,13 @@ namespace InventoryAPI.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Retrieves product and stock details by barcode number.
+        /// </summary>
+        /// <param name="barcodenumber">The barcode number of the product.</param>
+        /// <returns>
+        /// 200 OK with the stock and product details if found, 400 Bad Request if input is invalid or not found, or 500 Internal Server Error on failure.
+        /// </returns>
         [HttpGet("GetProductByBarCodeNumber")]
         public async Task<ActionResult<StockDTO>> GetProductByBarCodeNumber([FromQuery] string barcodenumber)
         {
