@@ -23,14 +23,44 @@ namespace InventoryAPI.Controllers
             _dbContext = dbContext;
         }
 
+        /// <summary>
+        /// Generates a barcode image for a product based on its name.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint retrieves the stock information for the specified product name,
+        /// generates a Code128 barcode image using the product's barcode number, and returns the image as a PNG file.
+        /// </remarks>
+        /// <param name="productName">
+        /// The name of the product for which to generate the barcode. This should match the <c>ProductName</c> property of a product in the database.
+        /// </param>
+        /// <returns>
+        /// Returns a PNG image file containing the generated barcode if the product is found.
+        /// If the product is not found, returns a 404 Not Found response with a JSON body:
+        /// <code>
+        /// {
+        ///   "Status": "NotFound",
+        ///   "Description": "Product not found"
+        /// }
+        /// </code>
+        /// If a server error occurs, returns a 500 Internal Server Error response with a JSON body:
+        /// <code>
+        /// {
+        ///   "Status": "ServerError",
+        ///   "Description": "Server error, contact administrator"
+        /// }
+        /// </code>
+        /// </returns>
+        /// <response code="200">Returns the barcode image as a PNG file.</response>
+        /// <response code="404">Product not found.</response>
+        /// <response code="500">Server error.</response>
         [HttpGet("GenerateBarcode")]
-        public async Task<ActionResult> GenerateBarcode([FromQuery] string barCodeNumber)
+        public async Task<ActionResult> GenerateBarcode([FromQuery] string productName)
         {
             try
             {
-                // 1. Retrieve the product by barcode number
-                var product = await _dbContext.Stocks
-                    .FirstOrDefaultAsync(s => s.BarCodeNumber == barCodeNumber);
+                var product = await _dbContext
+                    .Stocks.Include(p => p.Product)
+                    .FirstOrDefaultAsync(s => s.Product.ProductName == productName);
 
                 if (product == null)
                 {
