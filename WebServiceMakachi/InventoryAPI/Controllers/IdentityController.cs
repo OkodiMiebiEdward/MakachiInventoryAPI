@@ -47,18 +47,6 @@ namespace InventoryAPI.Controllers
 
                 var user = await _userManager.CreateAsync(new User
                 {
-                    #region Test Login
-                    //ADMIN
-                    //Test123456@
-
-                    //John
-                    //new password:Test123456& 
-                    //old password:Test123456++
-
-                    //Susan
-                    //Test123456%
-                    #endregion
-
                     UserName = data.UserName,
                     Email = data.Email,
                     EmailConfirmed = false,
@@ -91,57 +79,6 @@ namespace InventoryAPI.Controllers
                 });
             }
         }
-
-        //[HttpPost("Login")]
-        //public async Task<ActionResult<ResponseModel>> UserLogin([FromBody] AuthenticationData? loginDetail)
-        //{
-        //    try
-        //    {
-        //        if (loginDetail is null)
-        //            return BadRequest("Invalid data");
-
-        //        if (loginDetail.Password == "")
-        //            return BadRequest("Password is required");
-
-        //        var validUser = await _userManager.FindByNameAsync(loginDetail.UserName!);
-
-        //        if (validUser is null)
-        //        {
-        //            return NotFound(new ResponseModel
-        //            {
-        //                Status = "Error",
-        //                Description = "User not found"
-        //            });
-        //        }
-        //        else
-        //        {
-        //            var isPasswordValid = await _userManager.CheckPasswordAsync(validUser!, loginDetail.Password!);
-        //            var output = isPasswordValid switch
-        //            {
-        //                true => StatusCode(200, new ResponseModel
-        //                {
-        //                    Status = "Success",
-        //                    Description = "Login successful"
-        //                }),
-
-        //                false => StatusCode(400, new ResponseModel
-        //                {
-        //                    Status = "Error",
-        //                    Description = "Login unsuccessful"
-        //                })
-        //            };
-        //            return output;
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return StatusCode(500, new ResponseModel
-        //        {
-        //            Status = "ServerError",
-        //            Description = serverErrorMessage
-        //        });
-        //    }
-        //}
 
         [HttpPost("Login")]
         public async Task<ActionResult<ResponseModel>> UserLogin([FromBody] AuthenticationData? loginDetail)
@@ -208,11 +145,6 @@ namespace InventoryAPI.Controllers
         [HttpPost("CreateRole")]
         public async Task<ActionResult<ResponseModel>> CreateRole([FromBody] AuthenticationRole? authRole)
         {
-            /*
-               Dummy role
-               RoleName = "Admin"
-               Description = "Managing administrative activities"
-             */
             try
             {
                 if (authRole is null)
@@ -384,8 +316,6 @@ namespace InventoryAPI.Controllers
                     return BadRequest("Provide valid User");
                 else
                 {
-                    //if (string.IsNullOrWhiteSpace(user.Email))
-                    //    return BadRequest("Email is Required");
                     if (string.IsNullOrWhiteSpace(user.Password))
                         return BadRequest("Password is Required");
                     if (string.IsNullOrWhiteSpace(user.UserName))
