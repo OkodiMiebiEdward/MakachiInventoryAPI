@@ -42,6 +42,11 @@ namespace InventoryAPI.Controllers
                         Description = "Provide valid data"
                     });
 
+
+                if (category.Name == "string" || category.Description == "string" || category.Id == 0)
+                    return BadRequest("Placeholder values are not allowed.");
+                
+
                 if (string.IsNullOrEmpty(category.Name))
                     return BadRequest(new ResponseModel
                     {
