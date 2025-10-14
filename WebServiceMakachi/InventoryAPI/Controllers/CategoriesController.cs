@@ -152,7 +152,7 @@ namespace InventoryAPI.Controllers
                 if (getCategory is not null)
                     return Ok(getCategory);
                 else
-                    return NotFound($"Category with name {id} is not found");
+                    return NotFound($"Category with id {id} is not found");
             }
             catch (Exception)
             {
