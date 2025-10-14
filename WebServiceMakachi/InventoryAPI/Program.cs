@@ -41,6 +41,9 @@ builder.Services.AddSwaggerGen(options =>
                 new string[] {}
         }
     });
+
+    var xmlFilename = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
