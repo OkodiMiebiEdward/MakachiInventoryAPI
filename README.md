@@ -23,8 +23,6 @@ This API serves as the backend for Makachi Global Enterprise’s inventory manag
 - 🧼 **Input Validation:** Prevents injection and malformed requests  
 - 🔒 **Protected Endpoints:** Only authenticated users can access API routes  
 
-> **Note:** This project uses default authentication only. There is no role-based access control implemented.
-
 ## 📦 Core Endpoints
 
 | Method | Endpoint                  | Description                          | Auth Required |
