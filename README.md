@@ -9,7 +9,7 @@ This API serves as the backend for Makachi Global Enterprise’s inventory manag
 
 ## 🛠️ Tech Stack
 
-- **Framework:** ASP.NET Core (.NET 8)
+- **Framework:** ASP.NET Core (.NET 9)
 - **Language:** C#
 - **Architecture:** RESTful API
 - **Authentication:** JWT (JSON Web Tokens)
