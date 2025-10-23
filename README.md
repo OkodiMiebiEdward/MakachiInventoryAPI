@@ -50,9 +50,6 @@ This API serves as the backend for Makachi Global Enterprise’s inventory manag
 - 🔄 Postman collection available for testing endpoints  
 
 ## 🚀 Future Enhancements
-
-- 🔐 Role-based authorization  
-- 📊 Analytics endpoints for inventory trends  
 - 🔗 Supplier and invoice modules  
 - 🌍 Localization support  
 
