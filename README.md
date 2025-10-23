@@ -1,1 +1,69 @@
-# MakachiInventoryAPI
+# 🔗 Makachi Inventory API
+
+**Secure, scalable backend for inventory management.**  
+Makachi Inventory API is a RESTful backend service built with ASP.NET Core, designed to power the Makachi Inventory UI. It provides endpoints for managing products, categories, and users — with built-in authentication to ensure secure access across the system.
+
+## 🧩 Project Purpose
+
+This API serves as the backend for Makachi Global Enterprise’s inventory management system. It handles business logic, data persistence, and secure communication with the frontend UI.
+
+## 🛠️ Tech Stack
+
+- **Framework:** ASP.NET Core (.NET 8)
+- **Language:** C#
+- **Architecture:** RESTful API
+- **Authentication:** JWT (JSON Web Tokens)
+- **ORM:** Entity Framework Core
+- **Database:** SQL Server
+- **Documentation:** Swagger (OpenAPI)
+
+## 🔐 Security Features
+
+- 🔑 **JWT Authentication:** Secure token-based login system  
+- 🧼 **Input Validation:** Prevents injection and malformed requests  
+- 🔒 **Protected Endpoints:** Only authenticated users can access API routes  
+
+> **Note:** This project uses default authentication only. There is no role-based access control implemented.
+
+## 📦 Core Endpoints
+
+| Method | Endpoint                  | Description                          | Auth Required |
+|--------|---------------------------|--------------------------------------|---------------|
+| GET    | /api/products             | Retrieve all products                | ✅            |
+| POST   | /api/products             | Add a new product                    | ✅            |
+| PUT    | /api/products/{id}        | Update product details               | ✅            |
+| DELETE | /api/products/{id}        | Remove a product                     | ✅            |
+| GET    | /api/categories           | List all categories                  | ✅            |
+| POST   | /api/auth/login           | Authenticate user and issue token    | ❌            |
+| GET    | /api/users/me             | Get current user profile             | ✅            |
+
+
+## 📈 Business Value
+
+- Centralized control over inventory data  
+- Secure access for authenticated users  
+- Scalable architecture for future modules (e.g., billing, suppliers)  
+- Clean separation of concerns for maintainability  
+
+## 🧪 Testing & Documentation
+
+- ✅ Unit-tested service layer  
+- 📘 Swagger UI for live API exploration  
+- 🔄 Postman collection available for testing endpoints  
+
+## 🚀 Future Enhancements
+
+- 🔐 Role-based authorization  
+- 📊 Analytics endpoints for inventory trends  
+- 🔗 Supplier and invoice modules  
+- 🌍 Localization support  
+
+## 👨‍💻 About the Developer
+
+Built by a developer focused on clean architecture, secure design, and scalable backend systems. This project reflects strong command of .NET Core, API development, and enterprise-grade authentication practices.
+
+---
+
+Would you like help writing setup instructions, environment variable configuration, or linking it to the frontend repo? I can help with that too.
+
+
