@@ -87,8 +87,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://corelead-001-site1.anytempurl.com",
-               "https://corelead-001-site1.anytempurl.com")
+        policy.WithOrigins("",
+               "")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
