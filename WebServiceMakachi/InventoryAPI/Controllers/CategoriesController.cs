@@ -42,6 +42,11 @@ namespace InventoryAPI.Controllers
                         Description = "Provide valid data"
                     });
 
+
+                if (category.Name == "string" || category.Description == "string" || category.Id == 0)
+                    return BadRequest("Placeholder values are not allowed.");
+                
+
                 if (string.IsNullOrEmpty(category.Name))
                     return BadRequest(new ResponseModel
                     {
@@ -147,7 +152,7 @@ namespace InventoryAPI.Controllers
                 if (getCategory is not null)
                     return Ok(getCategory);
                 else
-                    return NotFound($"Category with name {id} is not found");
+                    return NotFound($"Category with id {id} is not found");
             }
             catch (Exception)
             {
