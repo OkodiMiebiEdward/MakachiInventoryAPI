@@ -57,8 +57,5 @@ This API serves as the backend for Makachi Global Enterprise’s inventory manag
 
 Built by a developer focused on clean architecture, secure design, and scalable backend systems. This project reflects strong command of .NET Core, API development, and enterprise-grade authentication practices.
 
----
-
-Would you like help writing setup instructions, environment variable configuration, or linking it to the frontend repo? I can help with that too.
 
 
