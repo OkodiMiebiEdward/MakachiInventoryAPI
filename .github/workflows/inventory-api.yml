@@ -5,7 +5,7 @@ on:
       - main
 env:
   DOCKERHUB_IMAGE: edwardmiebi/inventory-api 
-  AZURE_WEBAPP_NAME: Inventory-API  # TODO: replace with your Azure App Service name
+  AZURE_WEBAPP_NAME: Inventory-API
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
