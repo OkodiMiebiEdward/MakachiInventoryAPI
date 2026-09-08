@@ -6,7 +6,7 @@ on:
       - Feature
 
 env:
-  DOCKERHUB_IMAGE: edwardmiebi/projecttracker-api   # TODO: replace with your Docker Hub repo, e.g. "janedoe/myapp"
+  DOCKERHUB_IMAGE: edwardmiebi/inventory-api 
   AZURE_WEBAPP_NAME: ProjectTrackerAPI  # TODO: replace with your Azure App Service name
 
 jobs:
