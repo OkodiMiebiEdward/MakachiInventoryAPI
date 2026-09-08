@@ -87,8 +87,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("",
-               "")
+        policy.WithOrigins("https://makachiinventory-fxg2frawd5hwfcdm.southafricanorth-01.azurewebsites.net",
+               "http://makachiinventory-fxg2frawd5hwfcdm.southafricanorth-01.azurewebsites.net")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
