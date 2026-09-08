@@ -7,7 +7,7 @@ on:
 
 env:
   DOCKERHUB_IMAGE: edwardmiebi/inventory-api 
-  AZURE_WEBAPP_NAME: ProjectTrackerAPI  # TODO: replace with your Azure App Service name
+  AZURE_WEBAPP_NAME: Inventory-API  # TODO: replace with your Azure App Service name
 
 jobs:
   test:
@@ -60,7 +60,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./API.ProjectTracker/Dockerfile
+          file: ./InventoryAPI/Dockerfile
           push: true
           tags: |
             ${{ env.DOCKERHUB_IMAGE }}:${{ steps.meta.outputs.tag }}
