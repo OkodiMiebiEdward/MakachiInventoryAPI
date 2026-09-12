@@ -43,8 +43,8 @@ namespace InventoryAPI.Controllers
                     });
 
 
-                if (category.Name == "string" || category.Description == "string" || category.Id == 0)
-                    return BadRequest("Placeholder values are not allowed.");
+                if (category.Name == "" || category.Description == "")
+                    return BadRequest("Fields cannot be empty.");
                 
 
                 if (string.IsNullOrEmpty(category.Name))
