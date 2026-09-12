@@ -32,7 +32,6 @@ This API serves as the backend for Makachi Global Enterprise’s inventory manag
 | PUT    | /api/products/{id}        | Update product details               | ✅            |
 | DELETE | /api/products/{id}        | Remove a product                     | ✅            |
 | GET    | /api/categories           | List all categories                  | ✅            |
-| POST   | /api/auth/login           | Authenticate user and issue token    | ❌            |
 | GET    | /api/users/me             | Get current user profile             | ✅            |
 
 
@@ -44,8 +43,6 @@ This API serves as the backend for Makachi Global Enterprise’s inventory manag
 - Clean separation of concerns for maintainability  
 
 ## 🧪 Testing & Documentation
-
-- ✅ Unit-tested service layer  
 - 📘 Swagger UI for live API exploration  
 - 🔄 Postman collection available for testing endpoints  
 
