@@ -1,11 +1,11 @@
 # 🔗 Makachi Inventory API
 
 **Secure, scalable backend for inventory management.**  
-Makachi Inventory API is a RESTful backend service built with ASP.NET Core, designed to power the Makachi Inventory UI. It provides endpoints for managing products, categories, and users — with built-in authentication to ensure secure access across the system.
+Makachi Inventory API is a RESTful backend service built with ASP.NET Core, designed to power the Makachi Inventory UI. It provides endpoints for managing products, categories, and users with built-in authentication to ensure secure access across the system.
 
 ## 🧩 Project Purpose
 
-This API serves as the backend for Makachi Global Enterprise’s inventory management system. It handles business logic, data persistence, and secure communication with the frontend UI.
+This API serves as the backend for Makachi inventory management system. It handles business logic, data persistence, and secure communication with the frontend UI.
 
 ## 🛠️ Tech Stack
 
@@ -40,15 +40,11 @@ This project favors simplicity given its scope:
 | PUT    | /api/products/{id}        | Update product details               | ✅            |
 | DELETE | /api/products/{id}        | Remove a product                     | ✅            |
 | GET    | /api/categories           | List all categories                  | ✅            |
-| GET    | /api/users/me             | Get current user profile             | ✅            |
-
 
 ## 📈 Business Value
 
 - Centralized control over inventory data  
 - Secure access for authenticated users  
-- Scalable architecture for future modules (e.g., billing, suppliers)  
-- Clean separation of concerns for maintainability  
 
 ## 🧪 Testing & Documentation
 - 📘 Swagger UI for live API exploration  
