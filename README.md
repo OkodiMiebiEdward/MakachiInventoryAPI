@@ -17,6 +17,14 @@ This API serves as the backend for Makachi Global Enterprise’s inventory manag
 - **Database:** SQL Server
 - **Documentation:** Swagger (OpenAPI)
 
+## Architecture Notes
+
+This project favors simplicity given its scope:
+
+- **No service/repository layer** — `DbContext` is injected directly into controllers. 
+  Because of its simplistic design, a service layer wasn't deemed necessary. Would introduce 
+  one for a larger app or to enable easier unit testing.
+  
 ## 🔐 Security Features
 
 - 🔑 **JWT Authentication:** Secure token-based login system  
